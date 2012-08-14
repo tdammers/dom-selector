@@ -6,7 +6,7 @@ module Main (main) where
 import Text.XML.Cursor
 import qualified Text.HTML.DOM as H (readFile)
 import qualified Data.Text.Lazy.IO as TI (putStrLn)
-import Text.XML.Scraping
+import Text.XML.Scraping (innerHtml)
 import Text.XML.Selector.TH
 
 main :: IO ()

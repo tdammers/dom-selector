@@ -7,6 +7,7 @@ import Text.XML.Cursor
 import qualified Text.HTML.DOM as H (readFile)
 import qualified Data.Text.Lazy.IO as TI (putStrLn,writeFile)
 import Text.XML.Scraping
+import Text.XML.Selector
 import Text.XML.Selector.TH
 import Control.Monad(forM_)
 
@@ -22,6 +23,13 @@ test c n = do
   TI.writeFile ("output2."++(show n)++".html") (toHtml cs)
 
 
+-- Axis is a Cursor -> [Cursor] type. Cursor represents one position in a DOM tree.
+-- Axis takes a cursor and returns a traversing result as a list of cursors.
+-- For details, see Text.XML.Cursor in xml-conduit package.
+-- jq quasiquote parses a CSS selector at compile time and queryT [jq| ... |] generates an Axis.
+-- query "..." is equivalent of queryT but takes a string as a parameter. 
+
+-- axes is a list of Axis.
 axes :: [Axis]
 axes = map queryT [
   [jq| ul > li|]
@@ -31,5 +39,6 @@ axes = map queryT [
   , [jq| li.Japan ~ li|]
   , [jq| [marked] |]
   , [jq| li[favorite='1'] |]
-  ]
+  ] ++
+  map query ["ul > li", "div div li"]
 

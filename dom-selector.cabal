@@ -7,7 +7,30 @@ version:             0.1.0.0
 synopsis:            CSS DOM selectors for xml-conduit package
 description:
   CSS selector support for xml-conduit/html-conduit. This package supports compile-time checking of CSS selectors using quasiquotes.
-  See <https://github.com/nebuta/dom-selector/tree/master/examples> for examples.
+  .
+  * Quick start
+  .
+  > -- The following pragmas should be put first (Haddock does not accept a pragma notation.)
+  > -- LANGUAGE OverloadedStrings, QuasiQuotes
+  > module Main (main) where
+  >
+  > import Text.XML.Cursor
+  > import qualified Text.HTML.DOM as H (readFile)
+  > import qualified Data.Text.Lazy.IO as TI (putStrLn)
+  > import Text.XML.Scraping (innerHtml)
+  > import Text.XML.Selector.TH 
+  >
+  > main :: IO ()
+  > main = do
+  >   c <- fmap fromDocument $ H.readFile "input.html"
+  >   let cs = queryT [jq| ul#foo > li.bar |] c
+  >   TI.putStrLn $ innerHtml cs
+  .
+  You can use some elementary CSS selectors for traversing a DOM tree.
+  .
+  * Other examples
+  .
+  <https://github.com/nebuta/dom-selector/tree/master/examples>
 
 homepage:            https://github.com/nebuta/
 license:             BSD3
