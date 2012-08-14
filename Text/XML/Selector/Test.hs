@@ -2,13 +2,16 @@
 -- Testing
 --
 
-module Text.XML.Selector.Test where
+module Text.XML.Selector.Test (prop_parseJQ) where
 
+import Text.XML.Selector (showJQ)
+import Text.XML.Selector.Types
 import Text.XML.Selector.Parser
 import Test.QuickCheck
 import Control.Monad
 import Data.Maybe
 
+-- |QuickCheck for a parser.
 prop_parseJQ :: [JQSelector] -> Bool
 prop_parseJQ ss = (parseJQ . showJQ) ss == ss
 

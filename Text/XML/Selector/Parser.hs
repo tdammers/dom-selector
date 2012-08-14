@@ -1,10 +1,11 @@
 --
 -- Parsers for CSS query strings
 --
+{-# LANGUAGE DoAndIfThenElse #-}
 
 module Text.XML.Selector.Parser (parseJQ) where
 import Text.Parsec
-import Data.Either.Utils
+-- import Data.Either.Utils
 import Text.XML.Selector.Types
 
 import Data.Maybe
@@ -12,11 +13,11 @@ import qualified Data.Map as M
 
 type Parser a = Parsec String () a
 
--- | Parse jQuery selector string and return a list of 'JQSelector'.
+-- | Parse a jQuery selector string and return a list of 'JQSelector'.
 parseJQ :: String -> [JQSelector]
 parseJQ s = either (const []) id (parse parseKey "" (s++" ")) -- (++" ") is super ad hoc!!
 
-test_parseQuery s = forceEither $ parse parseKey "" (s++" ") 
+-- test_parseQuery s = forceEither $ parse parseKey "" (s++" ") 
 
 data JQSelectorToken = JQSelectorToken {
 	rel :: RelPrev,

@@ -9,9 +9,7 @@
 -- c $| query
 -- c $| query "meta[name='dc.Creator']" >=> attribute "content"
 
--- |JQuery module has
--- (1) a parser for a JQuery selector
--- (2) a wrapper for traversing functions of Text.XML.Cursor module in xml-conduit package.
+-- |This module has query functions for traversing DOM. 'queryT', a quasiquote version, is also available in "Text.XML.Selector.TH" module.
 module Text.XML.Selector (
   query,
   query1,
@@ -20,10 +18,6 @@ module Text.XML.Selector (
   byId,
   byClass,
   selectorMatch,
-  JQSelector(JQSelector),
-  RelPrev(Descendant,Child,Next,Sibling),
-  TagAttr(TagAttr),
-  AttrRel(Exists),
   next,
   maybeText,
   headm,
@@ -37,7 +31,7 @@ import Data.List
 import qualified Data.Text as T
 import Text.XML.Cursor
 import Text.XML as X -- hiding (Name)
-import Data.Either.Utils
+-- import Data.Either.Utils
 import qualified Data.Map as M
 import Data.Maybe
 -- import Language.Haskell.TH (runQ)
@@ -115,7 +109,8 @@ query1 s n | null res = Nothing
 	| otherwise = Just (head res)
 	where res = query s n
 
--- | ToDo: Search direction should be child -> parent to avoid duplicates for nested elements with same tag.
+{-
+-- | Old version: search direction should be child -> parent to avoid duplicates for nested elements with same tag.
 searchTreeOld :: [JQSelector] -> Axis
 searchTreeOld [] c = [c]
 searchTreeOld (x@(JQSelector Descendant _ _ _ _):xs) c = c $// checkElement (selectorMatch x)  >=> searchTree xs
@@ -125,29 +120,38 @@ searchTreeOld (x@(JQSelector Next _ _ _ _):xs) c =
     [] -> []
     cs -> (head cs) $| checkElement (selectorMatch x) >=> searchTree xs
 searchTreeOld ((JQSelector Sibling _ _ _ _):xs) c =  c $| followingSibling >=> searchTree xs
-
+-}
 
 searchTree :: [JQSelector] -> Axis
 searchTree xs = search (reverse xs)
   where
     search [] c = [c]
-    search (x@(JQSelector rel _ _ _ _):xs) c
-      | rel == Descendant || rel == Child
-        = c $// checkElement (selectorMatch x) >=> check (checkAncestors (rel==Child) xs)
-      | otherwise = error "next and sibling is not supported yet."
+    search (x@(JQSelector rel _ _ _ _):xs) c = c $// checkElement (selectorMatch x) >=> check (traceAncestors rel xs)
 
-checkAncestors :: Bool -> [JQSelector] -> Cursor -> Bool
-checkAncestors _ [] c = True
-checkAncestors False (x:xs) c
-  = case find (matchCursor x) (ancestor c) of
-      Just c2 -> checkAncestors (relPrev x == Child) xs c2
-      Nothing -> False
-checkAncestors True (x:xs) c
-  | isJust p = if matchCursor x (fromJust p) then checkAncestors (relPrev x == Child) xs (fromJust p) else False
-  | otherwise = False
+
+traceAncestors :: RelPrev -> [JQSelector] -> Axis
+traceAncestors _ [] c = [c]
+traceAncestors Child (x:xs) c
+  | isJust p = if matchCursor x (fromJust p) then traceAncestors (relPrev x) xs (fromJust p) else []
+  | otherwise = []
     where
       p :: Maybe Cursor
       p = headm (parent c)
+traceAncestors Descendant (x:xs) c
+  = case filter (matchCursor x) (ancestor c) of
+      [] -> []
+      as -> concatMap (traceAncestors (relPrev x) xs) as
+traceAncestors Next (x:xs) c
+  | isJust p = if matchCursor x (fromJust p) then traceAncestors (relPrev x) xs (fromJust p) else []
+  | otherwise = []
+    where
+      p :: Maybe Cursor
+      p = headm (precedingSibling c)
+traceAncestors Sibling (x:xs) c
+  = case filter (matchCursor x) (precedingSibling c) of
+      [] -> []
+      as -> concatMap (traceAncestors (relPrev x) xs) as
+
 
 -- |Return if an element matches a selector
 selectorMatch :: JQSelector -> Element -> Bool

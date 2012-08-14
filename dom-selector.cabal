@@ -3,55 +3,29 @@
 
 -- The name of the package.
 name:                dom-selector
-
--- The package version.  See the Haskell package versioning policy (PVP) 
--- for standards guiding when and how versions should be incremented.
--- http://www.haskell.org/haskellwiki/Package_versioning_policy
--- PVP summary:      +-+------- breaking API changes
---                   | | +----- non-breaking API additions
---                   | | | +--- code changes with no API change
 version:             0.1.0.0
-
--- A short (one-line) description of the package.
 synopsis:            CSS DOM selectors for xml-conduit package
+description:
+  CSS selector support for xml-conduit/html-conduit. This package supports compile-time checking of CSS selectors using quasiquotes.
+  See <https://github.com/nebuta/dom-selector/tree/master/examples> for examples.
 
--- A longer description of the package.
--- description:         
-
--- URL for the project homepage or repository.
-homepage:            http://github.com/nebuta/
-
--- The license under which the package is released.
+homepage:            https://github.com/nebuta/
 license:             BSD3
-
--- The file containing the license text.
 license-file:        LICENSE
-
--- The package author(s).
 author:              Nebuta Lab
-
--- An email address to which users can send suggestions, bug reports, and 
--- patches.
 maintainer:          nebuta.office@gmail.com
-
--- A copyright notice.
--- copyright:           
-
+copyright:           Copyright 2012 by Nebuta Lab           
 category:            Web
-
+stability:           alpha
 build-type:          Simple
-
--- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >=1.8
 
+source-repository head
+  type:     git
+  location: https://github.com/nebuta/dom-selector
 
 library
-  -- Modules exported by the library.
-  exposed-modules:     Text.XML.Modify, Text.XML.Selector, Text.XML.Selector.Parser, Text.XML.Selector.Test, Text.XML.Selector.TH, Text.XML.Selector.Types
-  
-  -- Modules included in this library but not exported.
-  -- other-modules:       
-  
-  -- Other library packages from which modules are imported.
-  build-depends:       base >=4.0, text ==0.11.*, xml-conduit >=1.0, html-conduit >=0.1, containers >=0.4, blaze-html >=0.5, MissingH >=1.1, parsec >=3.1, QuickCheck >=2.4, template-haskell >=2.5, th-lift >=0.5
+  exposed-modules:     Text.XML.Scraping, Text.XML.Selector, Text.XML.Selector.Parser, Text.XML.Selector.Test, Text.XML.Selector.TH, Text.XML.Selector.Types
+  other-modules:       
+  build-depends:       base >=4.0 && <5, text ==0.11.*, xml-conduit, html-conduit >=0.1, containers >=0.4, blaze-html >=0.5,  parsec >=3.1, QuickCheck >=2.4, template-haskell >=2.5, th-lift >=0.5
   

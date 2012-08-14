@@ -5,11 +5,10 @@ import Language.Haskell.TH
 import Language.Haskell.TH.Quote
 import Language.Haskell.TH.Lift
 import Text.Parsec
-import Text.JQuery
+import Text.XML.Selector
 import Text.XML.Cursor
 
 import Text.Parsec
-import Data.Either.Utils
 import Text.XML.Selector.Types
 import Text.XML.Selector.Parser
 
@@ -18,9 +17,6 @@ import qualified Data.Map as M
 
 type Parser a = Parsec String () a
 
--- | Parse jQuery selector string and return a list of 'JQSelector'.
--- parseJQT :: String -> [JQSelector]
--- parseJQT s = either (const []) id (parse parseKey "" (s++" ")) -- (++" ") is super ad hoc!!
 $(deriveLift ''JQSelector)
 $(deriveLift ''TagAttr)
 $(deriveLift ''RelPrev)
@@ -35,12 +31,14 @@ jqueryExpr str = do
                  [] -> error "query: Invalid selector"
                  sels -> [| sels |]
 
--- Define QuasiQuoter
+-- | QuasiQuoter for CSS selector
 jq :: QuasiQuoter
 jq = QuasiQuoter jqueryExpr undefined undefined undefined
 
 
--- | Get 'Axis' from jQuery selector QQ.
+-- |Get 'Axis' from jQuery selector QQ.
+--
+-- >html = innerHtml $ cursor $| queryT [jq| ul.foo > li#bar |]
 queryT :: [JQSelector] -> Axis
 queryT sels = searchTree sels
 
