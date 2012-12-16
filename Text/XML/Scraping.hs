@@ -24,18 +24,18 @@ import Text.XML.Selector.Types
 
 -- |Get ''innerHTML'' from a list of cursors.
 innerHtml :: [Cursor] -> TL.Text
-innerHtml cs = renderNodes $ map node $ concatMap child cs
+innerHtml = renderNodes . map node . concatMap child
 
 -- |Get ''innerText'' from a list of cursors.
 innerText :: [Cursor] -> T.Text
-innerText cs = T.concat $ map (innerTextN . node) cs
+innerText = T.concat . map (innerTextN . node)
 -- |''toHTML'' of a list of nodes.
 renderNodes :: [Node] -> TL.Text
-renderNodes ns = TL.concat $ map (renderHtml . Bl.toHtml) ns
+renderNodes  = TL.concat . map (renderHtml . Bl.toHtml)
 
 -- |''toHTML'' of a list of cursors.
 toHtml :: [Cursor] -> TL.Text
-toHtml cs = renderNodes $ map node cs
+toHtml = renderNodes . map node
 
 -- |''innerText'' of a single node.
 innerTextN :: Node -> T.Text
@@ -110,32 +110,25 @@ rmElem tag id kl ns = map (remove f) ns
     g s = Just s
 
 
---
--- Conversion to trees
---
-{-
-toTree :: Node -> Tr.Tree String
-toTree (TextNode t) = Tr.Node ("\""++T.unpack t++"\"") []
-toTree (Comment t) = Tr.Node ("<-- "++T.unpack t++" -->") []
-toTree (Element t as c) = Tr.Node str (map toTree c)
-	where
-		str = T.unpack t ++ g as
-		g as | null as = ""
-					| otherwise = ": [" ++ intercalate "," (map f as) ++ "]"
-		f (k,v) = T.unpack k ++ "=\"" ++ T.unpack v ++ "\""
 
+-- Not yet finished. ToDo: Look at State monad. This should be similar.
+type Query = String
+data ScrapingOp = Remove Query
 
-showTree :: [Node] -> IO ()
-showTree ns = do
-	mapM_ (putStr . Tr.drawTree . toTree) ns
--}
---
--- Helper functions for XmlHtml data
---
-{-
-(!!!) :: Node -> Int -> Node
-(Element _ _ c) !!! i = c !! i
-_ !!! _ = error "No child elements"
--}
+data Scraping = Scraping [ScrapingOp]
+
+removeBy :: String -> Scraping
+
+instance Functor Scraping where
+  fmap f (Scraping ops) = Scraping (map f ops)
+
+instance Applicative Scraping where
+  pure ops = Scraping ops
+  Scraping f <*> Scraping a = Scraping (f a)
+
+instance Monad Scraping where
+  return = pure
+  Scraping a >>= f = Scraping (
+
 
 

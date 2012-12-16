@@ -4,7 +4,7 @@
 -- The name of the package.
 name:                dom-selector
 version:             0.1.0.0
-synopsis:            CSS DOM selectors for xml-conduit package
+synopsis:            DOM traversal by CSS selectors for xml-conduit package
 description:
   CSS selector support for xml-conduit/html-conduit. This package supports compile-time checking of CSS selectors using quasiquotes.
   .
@@ -51,4 +51,13 @@ library
   exposed-modules:     Text.XML.Scraping, Text.XML.Selector, Text.XML.Selector.Parser, Text.XML.Selector.Test, Text.XML.Selector.TH, Text.XML.Selector.Types
   other-modules:       
   build-depends:       base >=4.0 && <5, text ==0.11.*, xml-conduit, html-conduit >=0.1, containers >=0.4, blaze-html >=0.5,  parsec >=3.1, QuickCheck >=2.4, template-haskell >=2.5, th-lift >=0.5
-  
+
+
+
+Test-Suite test
+  type: exitcode-stdio-1.0
+  main-is: test-scraping.hs
+  build-depends:       base >=4.0 && <5, text ==0.11.*, xml-conduit, html-conduit >=0.1, containers >=0.4, blaze-html >=0.5,  parsec >=3.1, QuickCheck >=2.4, template-haskell >=2.5, th-lift >=0.5
+
+
+
