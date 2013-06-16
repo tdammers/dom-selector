@@ -11,6 +11,8 @@ import Test.QuickCheck
 import Control.Monad
 import Data.Maybe
 
+
+
 -- |QuickCheck for a parser.
 prop_parseJQ :: [JQSelector] -> Bool
 prop_parseJQ ss = (parseJQ . showJQ) ss == ss

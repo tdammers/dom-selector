@@ -43,4 +43,3 @@ queryT :: [JQSelector] -> Axis
 queryT sels = searchTree sels
 
 
-

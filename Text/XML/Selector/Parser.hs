@@ -3,6 +3,11 @@
 --
 {-# LANGUAGE DoAndIfThenElse #-}
 
+{-# LANGUAGE CPP #-}
+#if __GLASGOW_HASKELL__ >= 702
+{-# LANGUAGE Safe #-}
+#endif
+
 module Text.XML.Selector.Parser (parseJQ) where
 import Text.Parsec
 -- import Data.Either.Utils
@@ -33,6 +38,7 @@ transformSelector (JQSelectorToken rel name) = JQSelector rel (t1 t) (t2 t) (t3 
     f ((Id s):xs) r = f xs (t1 r,Just s,t3 r,t4 r)
     f ((Class s):xs) r = f xs (t1 r,t2 r,s:t3 r,t4 r)
     f ((Attr k op v):xs) r = f xs (t1 r,t2 r,t3 r,(g k op v):(t4 r))
+    f (Not inners) r = error ":not selector is not implemented yet."
     t1 (a,_,_,_) = a
     t2 (_,a,_,_) = a
     t3 (_,_,a,_) = a
@@ -56,11 +62,14 @@ selector = do
             Nothing -> Descendant
             _ -> error "Incorrect option."
   skipMany myspaces
-  tok <- many1 $ choice [try selId, try selClass, try selTag, try selAttr]
+  tok <- many1 $ choice [try selId, try selClass, try selTag, try selAttr, try selNot]
   skipMany myspaces
   return $ transformSelector (JQSelectorToken t tok)
 
-data NameIdClassAttr = TagName String | Id String | Class String | Attr String (Maybe String) (Maybe String) deriving (Eq,Show,Ord)
+data NameIdClassAttr =
+  TagName String | Id String | Class String | Attr String (Maybe String) (Maybe String)
+  | Not [NameIdClassAttr]  -- New at ver. 0.2
+  deriving (Eq,Show,Ord)
 
 selTag :: Parser NameIdClassAttr
 selTag = do
@@ -92,6 +101,16 @@ selAttr = do
     return ' '
   char ']'
   return (Attr k op v)
+
+selNot :: Parser NameIdClassAttr
+selNot = do
+  string ":not("
+  inners <- sepBy (choice [try selId, try selClass, try selTag, try selAttr, try selNot]) $ do
+              skipMany myspaces
+              char ','
+              skipMany myspaces
+  char ')'
+  return (Not inners)
 
 -- stopDelim = (lookAhead (choice (map char ".#>+~ \t")))
 

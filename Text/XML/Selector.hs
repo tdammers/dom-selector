@@ -68,6 +68,7 @@ byId s = checkElement (elemHasId (Just s))
 -- byIdT :: String -> Axis
 byIdT s = [e| checkElement (elemHasId (Just s)) |]
 
+
 -- | Axis for choosing elements by a class
 byClass :: String -> Axis
 byClass s = checkElement (elemHasClass [s])
