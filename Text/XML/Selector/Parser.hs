@@ -3,10 +3,6 @@
 --
 {-# LANGUAGE DoAndIfThenElse #-}
 
-{-# LANGUAGE CPP #-}
-#if __GLASGOW_HASKELL__ >= 702
-{-# LANGUAGE Safe #-}
-#endif
 
 module Text.XML.Selector.Parser (parseJQ) where
 import Text.Parsec
@@ -38,7 +34,7 @@ transformSelector (JQSelectorToken rel name) = JQSelector rel (t1 t) (t2 t) (t3 
     f ((Id s):xs) r = f xs (t1 r,Just s,t3 r,t4 r)
     f ((Class s):xs) r = f xs (t1 r,t2 r,s:t3 r,t4 r)
     f ((Attr k op v):xs) r = f xs (t1 r,t2 r,t3 r,(g k op v):(t4 r))
-    f (Not inners) r = error ":not selector is not implemented yet."
+    f ((Not inners):xs) r = error ":not selector is not implemented yet."
     t1 (a,_,_,_) = a
     t2 (_,a,_,_) = a
     t3 (_,_,a,_) = a
