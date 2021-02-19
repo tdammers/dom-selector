@@ -133,7 +133,7 @@ selFirstChild = do
 selLastChild :: Parser NameIdClassAttr
 selLastChild = do
   string ":last-child"
-  return (Filter FirstChild)
+  return (Filter LastChild)
 
 -- stopDelim = (lookAhead (choice (map char ".#>+~ \t")))
 
