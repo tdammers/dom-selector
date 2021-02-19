@@ -49,7 +49,8 @@ showJQ ss = foldl f "" ss
       maybe "" id (jqTagName sel) ++
       maybe "" (("#"++)) (jqTagId sel) ++ 
       concat (map (("."++)) (jqTagClass sel)) ++
-      if null (jqTagAttr sel) then "" else (concatMap h (jqTagAttr sel))
+      if null (jqTagAttr sel) then "" else (concatMap h (jqTagAttr sel)) ++
+      concatMap p (jqSelfFilters sel)
     g Descendant = " "
     g Child = " > "
     g Next = " + "
@@ -57,6 +58,8 @@ showJQ ss = foldl f "" ss
     h (TagAttr k Nothing _) = "["++k++"]"
     h (TagAttr k (Just v) r) = "["++k ++ relToStr r ++ "\"" ++ v ++ "\"]"
 --    h _ = error "Invalid TagAttr"
+    p FirstChild = ":first-child"
+    p LastChild = ":last-child"
 
 
 -- Some elementary search
@@ -127,8 +130,20 @@ searchTree :: [JQSelector] -> Axis
 searchTree xs = search (reverse xs)
   where
     search [] c = [c]
-    search (x@(JQSelector rel _ _ _ _):xs) c = c $// checkElement (selectorMatch x) >=> check (traceAncestors rel xs)
+    search (x@(JQSelector rel _ _ _ _ fil):xs) c =
+      c $// checkElement (selectorMatch x)
+        >=> check (traceAncestors rel xs)
+        >=> traceSelfFilters fil
 
+traceSelfFilters :: [SelfFilter] -> Axis
+traceSelfFilters [] = (:[])
+traceSelfFilters (f:fs) = traceSelfFilter f >=> traceSelfFilters fs
+
+traceSelfFilter :: SelfFilter -> Axis
+traceSelfFilter FirstChild c =
+  if null (precedingSibling c) then [c] else []
+traceSelfFilter LastChild c =
+  if null (followingSibling c) then [c] else []
 
 traceAncestors :: RelPrev -> [JQSelector] -> Axis
 traceAncestors _ [] c = [c]
@@ -156,7 +171,7 @@ traceAncestors Sibling (x:xs) c
 
 -- |Return if an element matches a selector
 selectorMatch :: JQSelector -> Element -> Bool
-selectorMatch (JQSelector _ name id klass attr) e
+selectorMatch (JQSelector _ name id klass attr _) e
   = elemIsTag name e && elemHasId id e && elemHasClass klass e && all (flip elemHasAttr e) attr
 
 matchNode :: JQSelector -> Node -> Bool

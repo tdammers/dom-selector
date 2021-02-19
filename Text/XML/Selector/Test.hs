@@ -35,7 +35,8 @@ instance Arbitrary JQSelector where
                 n <- choose (1,10)
                 replicateM n (arbitrary :: Gen TagAttr)
               _ -> arbitrary
-    return (JQSelector rel name id klass attr)
+    filter <- arbitrary
+    return (JQSelector rel name id klass attr filter)
 
 instance Arbitrary TagAttr where
   arbitrary = do
@@ -50,6 +51,9 @@ instance Arbitrary RelPrev where
   arbitrary = elements (enumFrom (toEnum 0))
 
 instance Arbitrary AttrRel where
+  arbitrary = elements (enumFrom (toEnum 0))
+
+instance Arbitrary SelfFilter where
   arbitrary = elements (enumFrom (toEnum 0))
 
 

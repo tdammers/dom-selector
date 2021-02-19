@@ -26,19 +26,21 @@ data JQSelectorToken = JQSelectorToken {
 } deriving (Eq,Show)
 
 transformSelector :: JQSelectorToken -> JQSelector
-transformSelector (JQSelectorToken rel name) = JQSelector rel (t1 t) (t2 t) (t3 t) (t4 t)
+transformSelector (JQSelectorToken rel name) = JQSelector rel (t1 t) (t2 t) (t3 t) (t4 t) (t5 t)
   where
-    t = f name (Nothing,Nothing,[],[])
+    t = f name (Nothing,Nothing,[],[],[])
     f [] r = r
-    f ((TagName s):xs) r = f xs (Just s,t2 r,t3 r,t4 r)
-    f ((Id s):xs) r = f xs (t1 r,Just s,t3 r,t4 r)
-    f ((Class s):xs) r = f xs (t1 r,t2 r,s:t3 r,t4 r)
-    f ((Attr k op v):xs) r = f xs (t1 r,t2 r,t3 r,(g k op v):(t4 r))
+    f ((TagName s):xs) r = f xs (Just s, t2 r, t3 r, t4 r, t5 r)
+    f ((Id s):xs) r = f xs (t1 r, Just s, t3 r, t4 r, t5 r)
+    f ((Class s):xs) r = f xs (t1 r, t2 r, s:t3 r, t4 r, t5 r)
+    f ((Attr k op v):xs) r = f xs (t1 r, t2 r, t3 r, (g k op v):(t4 r), t5 r)
     f ((Not inners):xs) r = error ":not selector is not implemented yet."
-    t1 (a,_,_,_) = a
-    t2 (_,a,_,_) = a
-    t3 (_,_,a,_) = a
-    t4 (_,_,_,a) = a
+    f ((Filter sf):xs) r = f xs (t1 r, t2 r, t3 r, t4 r, sf:t5 r)
+    t1 (a,_,_,_,_) = a
+    t2 (_,a,_,_,_) = a
+    t3 (_,_,a,_,_) = a
+    t4 (_,_,_,a,_) = a
+    t5 (_,_,_,_,a) = a
     g k op v = TagAttr k v (fromMaybe Exists (op >>= (flip M.lookup attrOpList)))
     
 attrOpList :: M.Map String AttrRel
@@ -58,13 +60,28 @@ selector = do
             Nothing -> Descendant
             _ -> error "Incorrect option."
   skipMany myspaces
-  tok <- many1 $ choice [try selId, try selClass, try selTag, try selAttr, try selNot]
+  tok <- many1 selectorItem
   skipMany myspaces
   return $ transformSelector (JQSelectorToken t tok)
 
-data NameIdClassAttr =
-  TagName String | Id String | Class String | Attr String (Maybe String) (Maybe String)
+selectorItem :: Parser NameIdClassAttr
+selectorItem = choice
+          [ try selId
+          , try selClass
+          , try selTag
+          , try selAttr
+          , try selNot
+          , try selFirstChild
+          , try selLastChild
+          ]
+
+data NameIdClassAttr
+  = TagName String
+  | Id String
+  | Class String
+  | Attr String (Maybe String) (Maybe String)
   | Not [NameIdClassAttr]  -- New at ver. 0.2
+  | Filter SelfFilter
   deriving (Eq,Show,Ord)
 
 selTag :: Parser NameIdClassAttr
@@ -101,12 +118,22 @@ selAttr = do
 selNot :: Parser NameIdClassAttr
 selNot = do
   string ":not("
-  inners <- sepBy (choice [try selId, try selClass, try selTag, try selAttr, try selNot]) $ do
+  inners <- sepBy selectorItem $ do
               skipMany myspaces
               char ','
               skipMany myspaces
   char ')'
   return (Not inners)
+
+selFirstChild :: Parser NameIdClassAttr
+selFirstChild = do
+  string ":first-child"
+  return (Filter FirstChild)
+
+selLastChild :: Parser NameIdClassAttr
+selLastChild = do
+  string ":last-child"
+  return (Filter FirstChild)
 
 -- stopDelim = (lookAhead (choice (map char ".#>+~ \t")))
 

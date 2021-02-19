@@ -159,7 +159,7 @@ rmElem :: String -> String -> [String] -> [Node] -> [Node]
 rmElem tag id kl ns = map (remove f) ns
   where
     f :: Node -> Bool
-    f (NodeElement e) = selectorMatch (JQSelector Descendant (g tag) (g id) kl []) e
+    f (NodeElement e) = selectorMatch (JQSelector Descendant (g tag) (g id) kl [] []) e
     f _ = False
     g :: String -> Maybe String
     g "" = Nothing

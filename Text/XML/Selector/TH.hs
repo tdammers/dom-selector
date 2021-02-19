@@ -21,6 +21,7 @@ $(deriveLift ''JQSelector)
 $(deriveLift ''TagAttr)
 $(deriveLift ''RelPrev)
 $(deriveLift ''AttrRel)
+$(deriveLift ''SelfFilter)
 
 -- instance Lift JQSelector where
 --  lift (JQSelector a b c d e) = [| JQSelector a b c d e |]
