@@ -146,7 +146,6 @@ traceSelfFilter LastChild c =
   if null (followingSibling c) then [c] else []
 
 traceAncestors :: RelPrev -> [JQSelector] -> Axis
-traceAncestors _ [] c = [c]
 traceAncestors Child (x:xs) c
   | isJust p = if matchCursor x (fromJust p) then traceAncestors (relPrev x) xs (fromJust p) else []
   | otherwise = []
@@ -167,6 +166,7 @@ traceAncestors Sibling (x:xs) c
   = case filter (matchCursor x) (precedingSibling c) of
       [] -> []
       as -> concatMap (traceAncestors (relPrev x) xs) as
+traceAncestors _ [] c = [c]
 
 
 -- |Return if an element matches a selector
